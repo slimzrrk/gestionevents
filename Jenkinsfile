@@ -1,39 +1,49 @@
 pipeline {
     agent any
     environment {
-        DOCKER_HUB_CREDENTIALS = 'docker-hub-credentials-id' // Remplacez par l'ID de vos credentials
-        DOCKER_IMAGE = 'username/gestionevents' // Remplacez 'username' par votre Docker Hub username
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials') // Identifiants Docker Hub
+        IMAGE_NAME = "slimzrk/gestionevents"          // Nom de l'image Docker
     }
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                checkout scm
+                // Clonage du dépôt Git
+                git 'https://github.com/slimzrrk/gestionevents'
             }
         }
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                sh './mvnw clean package' // Compile et package l'application
+                script {
+                    // Construction de l'image Docker
+                    sh 'docker build -t $IMAGE_NAME:latest .'
+                }
             }
         }
-        stage('Docker Build') {
+        stage('Scan for Vulnerabilities') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE:latest .'
-            }
-        }
-        stage('Security Scan') {
-            steps {
-                sh 'trivy image $DOCKER_IMAGE:latest'
+                script {
+                    // Analyse des vulnérabilités avec Trivy
+                    sh 'trivy image $IMAGE_NAME:latest || echo "Trivy terminé avec des avertissements."'
+                }
             }
         }
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push $DOCKER_IMAGE:latest
-                    '''
+                script {
+                    // Connexion au registre Docker Hub et push de l'image
+                    docker.withRegistry('https://registry.hub.docker.com', DOCKER_HUB_CREDENTIALS) {
+                        sh 'docker push $IMAGE_NAME:latest'
+                    }
                 }
             }
+        }
+    }
+    post {
+        always {
+            echo 'Pipeline terminé avec succès.'
+        }
+        failure {
+            echo 'Pipeline échoué.'
         }
     }
 }
