@@ -8,7 +8,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 // Clonage du dépôt Git
-                git 'https://github.com/slimzrrk/gestionevents'
+                git branch: 'main', url: 'https://github.com/slimzrrk/gestionevents'
             }
         }
         stage('Build Docker Image') {
