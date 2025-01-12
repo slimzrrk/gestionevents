@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials') // Identifiants Docker Hub
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub') // Identifiants Docker Hub
         IMAGE_NAME = "slimzrk/gestionevents"          // Nom de l'image Docker
     }
     stages {
