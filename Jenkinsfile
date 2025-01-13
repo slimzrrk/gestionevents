@@ -41,6 +41,14 @@ pipeline {
                 }
             }
         }*/
+        stage('Test Docker Access') {
+            steps {
+                script {
+                    sh 'docker --version'
+                    sh 'docker ps'
+                }
+            }
+        }
 
         stage('Push Docker Image to Docker Hub') {
             steps {
