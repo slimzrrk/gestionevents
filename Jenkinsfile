@@ -32,7 +32,6 @@ pipeline {
             steps {
                 script {
                     // Scan de l'image Docker avec Trivy pour détecter les vulnérabilités
-                    sh 'trivy clean'
                     sh """
                     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \\
                     -e TRIVY_DB_REPO=ghcr.io/aquasecurity/trivy-db \\
