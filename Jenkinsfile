@@ -41,6 +41,15 @@ pipeline {
                 }
             }
         }*/
+
+        stage('Check PATH') {
+            steps {
+                script {
+                    sh 'echo $PATH'
+                }
+            }
+        }
+
         stage('Test Docker Access') {
             steps {
                 script {
@@ -49,6 +58,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Push Docker Image to Docker Hub') {
             steps {
