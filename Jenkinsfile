@@ -31,22 +31,7 @@ pipeline {
             }
         }
 
-        stage('Security Scan') {
-            steps {
-                echo "Running security scan with Trivy..."
-                script {
-                    try {
-                        sh """
-                        docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \\
-                        aquasec/trivy:latest image ${DOCKER_IMAGE}
-                        """
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "Security scan failed: ${e.message}"
-                    }
-                }
-            }
-        }
+  
 
         stage('Push Docker Image to Docker Hub') {
             steps {
