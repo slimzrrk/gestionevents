@@ -75,9 +75,9 @@ pipeline {
         stage('Push Docker Image to Docker Hub') {
             steps {
                 script {
-                    // Push de l'image Docker vers Docker Hub
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
-                        dockerImage.push()
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
+                        sh 'docker tag gestionevents:latest slimzrk/gestionevents:latest'
+                        sh 'docker push slimzrk/gestionevents:latest'
                     }
                 }
             }
