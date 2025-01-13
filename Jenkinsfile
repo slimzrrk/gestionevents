@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials') // Credentials pour Docker Hub
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub') // Credentials pour Docker Hub
         IMAGE_NAME = "slimzrk/gestionevents" // Nom de l'image Docker
     }
 
@@ -75,9 +75,9 @@ pipeline {
         stage('Push Docker Image to Docker Hub') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
-                        sh 'docker tag gestionevents:latest slimzrk/gestionevents:latest'
-                        sh 'docker push slimzrk/gestionevents:latest'
+                    // Push de l'image Docker vers Docker Hub
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+                        dockerImage.push()
                     }
                 }
             }
