@@ -36,7 +36,7 @@ pipeline {
                     sh """
                     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \\
                     -e TRIVY_DB_REPO=ghcr.io/aquasecurity/trivy-db \\
-                    aquasec/trivy:latest image --scanners vuln --timeout 10m --exit-code 0 --severity LOW,MEDIUM,HIGH,CRITICAL \\
+                    aquasec/trivy:latest image --scanners vuln --timeout 30m --exit-code 0 --severity LOW,MEDIUM,HIGH,CRITICAL \\
                     ${IMAGE_NAME}
                     """
                 }
