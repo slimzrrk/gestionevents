@@ -10,15 +10,40 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "Checking out the code from GitHub..."
-                git branch: 'main', 
-                    url: 'git@github.com:slimzrrk/gestionevents.git' // Your repository URL
+                script {
+                    try {
+                        git branch: 'main', 
+                            url: 'git@github.com:slimzrrk/gestionevents.git' // Your repository URL
+                    } catch (Exception e) {
+                        error "Failed to checkout code: ${e.message}"
+                    }
+                }
             }
         }
 
         stage('Build JAR') {
             steps {
                 echo "Building Spring Boot application..."
-                sh './mvnw clean package -DskipTests' // Build the project, skipping tests
+                script {
+                    try {
+                        sh './mvnw clean package -DskipTests' // Build the project, skipping tests
+                    } catch (Exception e) {
+                        error "Failed to build the JAR: ${e.message}"
+                    }
+                }
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                echo "Logging into Docker Hub..."
+                script {
+                    try {
+                        sh 'echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin'
+                    } catch (Exception e) {
+                        error "Docker login failed: ${e.message}"
+                    }
+                }
             }
         }
 
@@ -26,19 +51,23 @@ pipeline {
             steps {
                 echo "Building Docker image..."
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE} ."
+                    try {
+                        sh "docker build -t ${DOCKER_IMAGE} ."
+                    } catch (Exception e) {
+                        error "Failed to build Docker image: ${e.message}"
+                    }
                 }
             }
         }
-
-  
 
         stage('Push Docker Image to Docker Hub') {
             steps {
                 echo "Pushing Docker image to Docker Hub..."
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+                    try {
                         sh "docker push ${DOCKER_IMAGE}"
+                    } catch (Exception e) {
+                        error "Failed to push Docker image: ${e.message}"
                     }
                 }
             }
@@ -49,7 +78,11 @@ pipeline {
         always {
             echo "Cleaning up Docker images..."
             script {
-                sh "docker rmi ${DOCKER_IMAGE} || true"
+                try {
+                    sh "docker rmi ${DOCKER_IMAGE} || true"
+                } catch (Exception e) {
+                    echo "Failed to clean up Docker images: ${e.message}"
+                }
             }
         }
         success {
