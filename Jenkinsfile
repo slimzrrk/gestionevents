@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub') // Credentials pour Docker Hub
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials') // Credentials pour Docker Hub
         IMAGE_NAME = "slimzrk/gestionevents" // Nom de l'image Docker
     }
 
