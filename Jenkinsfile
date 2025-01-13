@@ -50,11 +50,23 @@ pipeline {
             }
         }
 
-        stage('Test Docker Access') {
+        stage('Test Docker') {
             steps {
                 script {
-                    sh 'docker --version'
-                    sh 'docker ps'
+                    sh '''
+                    echo "Testing Docker version..."
+                    docker --version
+                    echo "Testing Docker ps..."
+                    docker ps
+                    '''
+                }
+            }
+        }
+        stage('Test Docker with Absolute Path') {
+            steps {
+                script {
+                    sh '/usr/local/bin/docker --version'
+                    sh '/usr/local/bin/docker ps'
                 }
             }
         }
