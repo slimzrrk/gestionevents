@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'slimzrrk/gestionevents' // Your Docker image name
+        DOCKER_IMAGE = 'slimzrk/gestionevents' // Your Docker image name
         DOCKER_HUB_CREDENTIALS = credentials('dockerhub') // Docker Hub credentials ID
     }
 
