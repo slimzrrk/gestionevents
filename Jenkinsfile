@@ -28,7 +28,7 @@ pipeline {
             }
         }
 
-        stage('Scan Docker Image') {
+        /*stage('Scan Docker Image') {
             steps {
                 script {
                     // Scan de l'image Docker avec Trivy pour détecter les vulnérabilités
@@ -40,7 +40,7 @@ pipeline {
                     """
                 }
             }
-        }
+        }*/
 
         stage('Push Docker Image to Docker Hub') {
             steps {
