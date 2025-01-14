@@ -1,84 +1,70 @@
 pipeline {
     agent any
 
-    triggers {
-        pollSCM('* * * * *') // Vérifie les changements toutes les minutes
-    }
-
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub') // Credentials pour Docker Hub
-        IMAGE_NAME = "slimzrk/gestionevents" // Nom de l'image Docker
+        DOCKER_IMAGE = 'slimzrk/gestionevents' // Your Docker image name
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub') // Docker Hub credentials ID
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'git@github.com:slimzrrk/gestionevents.git',
-                    credentialsId: 'github' // Remplace 'github' par l'ID correct
+                echo "Checking out the code from GitHub..."
+                script {
+                    git branch: 'main',
+                        url: 'git@github.com:slimzrrk/gestionevents.git' // Your repository URL
+                }
+            }
+        }
+
+        stage('Build JAR') {
+            steps {
+                echo "Building Spring Boot application..."
+                script {
+                    sh './mvnw clean package -DskipTests' // Build the project, skipping tests
+                }
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                echo "Logging into Docker Hub..."
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    }
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
+                echo "Building Docker image..."
                 script {
-                    // Construire l'image Docker pour l'application complète (backend + frontend)
-                    dockerImage = docker.build("${IMAGE_NAME}")
+                    sh "docker build -t ${DOCKER_IMAGE} ."
                 }
             }
         }
 
-        /*stage('Scan Docker Image') {
+        stage('Scan Docker Image with Trivy') {
             steps {
+                echo "Scanning Docker image for vulnerabilities..."
                 script {
-                    // Scan de l'image Docker avec Trivy pour détecter les vulnérabilités
-                    sh """
-                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \\
-                    -e TRIVY_DB_REPO=ghcr.io/aquasecurity/trivy-db \\
-                    aquasec/trivy:latest image --scanners vuln --timeout 30m --exit-code 0 --severity LOW,MEDIUM,HIGH,CRITICAL \\
-                    ${IMAGE_NAME}
-                    """
-                }
-            }
-        }*/
-
-        stage('Check PATH') {
-            steps {
-                script {
-                    sh 'echo $PATH'
+                    def scanResult = sh(script: "trivy image ${DOCKER_IMAGE}", returnStatus: true)
+                    if (scanResult != 0) {
+                        echo "Trivy scan detected vulnerabilities. Please review the vulnerabilities."
+                        sh "trivy image --format table ${DOCKER_IMAGE}" // Print vulnerabilities
+                        error "Pipeline failed due to security vulnerabilities."
+                    }
                 }
             }
         }
-
-        stage('Test Docker') {
-            steps {
-                script {
-                    sh '''
-                    echo "Testing Docker version..."
-                    docker --version
-                    echo "Testing Docker ps..."
-                    docker ps
-                    '''
-                }
-            }
-        }
-        stage('Test Docker with Absolute Path') {
-            steps {
-                script {
-                    sh '/usr/local/bin/docker --version'
-                    sh '/usr/local/bin/docker ps'
-                }
-            }
-        }
-
 
         stage('Push Docker Image to Docker Hub') {
             steps {
+                echo "Pushing Docker image to Docker Hub..."
                 script {
-                    // Push de l'image Docker vers Docker Hub
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
-                        dockerImage.push()
-                    }
+                    sh "docker push ${DOCKER_IMAGE}"
                 }
             }
         }
@@ -86,17 +72,16 @@ pipeline {
 
     post {
         always {
+            echo "Cleaning up Docker images..."
             script {
-                echo 'Cleanup phase!'
-                // Supprimer les images Docker pour libérer de l'espace
-                if (sh(script: "docker images -q aquasec/trivy", returnStdout: true).trim()) {
-                    sh 'docker rmi aquasec/trivy'
-                }
-                if (sh(script: "docker images -q ${IMAGE_NAME}", returnStdout: true).trim()) {
-                    sh "docker rmi ${IMAGE_NAME}"
-                }
-                echo 'Cleanup Successfully done!'
+                sh "docker rmi ${DOCKER_IMAGE} || true"
             }
+        }
+        success {
+            echo "Pipeline completed successfully!"
+        }
+        failure {
+            echo "Pipeline failed. Check the logs for more details."
         }
     }
 }

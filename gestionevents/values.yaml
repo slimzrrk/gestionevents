@@ -1,0 +1,104 @@
+# Default values for gestionevents.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2  # Vous pouvez ajuster cela en fonction du nombre de réplicas souhaité.
+
+# Container image for your Spring Boot application
+image:
+  repository: gestionevents
+  pullPolicy: IfNotPresent
+  tag: latest  # Remplacez cela par le tag de votre image Spring Boot si nécessaire
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Service account configuration
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+# Service configuration for the Spring Boot application
+service:
+  type: ClusterIP
+  port: 8080  # Port utilisé par votre application Spring Boot
+  targetPort: 8080
+
+# MySQL configuration
+mysql:
+  image:
+    repository: mysql
+    tag: "8.0"
+  rootPassword: rootpassword
+  database: gestionevents
+  user: root  # Vous n'avez pas besoin de spécifier un utilisateur ici, car root est l'utilisateur par défaut
+  password: rootpassword  # Le mot de passe de l'utilisateur root
+  port: 3306
+
+# Ingress configuration for external access to your application
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: gestionevents.local  # Changez ceci en fonction de votre configuration de domaine
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+# Resources for MySQL and Spring Boot containers
+resources:
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# Liveness and Readiness probes for Spring Boot application
+livenessProbe:
+  httpGet:
+    path: /
+    port: 8080  # Assurez-vous que votre application expose ce path pour la sonde de vivacité
+readinessProbe:
+  httpGet:
+    path: /
+    port: 8080
+
+# Enable or disable autoscaling
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Persistent storage configuration for MySQL
+volumes:
+  - name: mysql-storage
+    persistentVolumeClaim:
+      claimName: mysql-pvc  # Assurez-vous que vous avez créé un PVC pour MySQL
+
+volumeMounts:
+  - name: mysql-storage
+    mountPath: /var/lib/mysql
+
+# Node selectors, tolerations, and affinities for Kubernetes scheduling
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Additional volumeMounts for Spring Boot application, if necessary
+# volumeMounts:
+#   - name: config-volume
+#     mountPath: /etc/config

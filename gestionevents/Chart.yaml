@@ -1,0 +1,15 @@
+apiVersion: v2
+name: gestionevents
+description: A Helm chart for deploying the GestionEvents Spring Boot application on Kubernetes
+
+# A chart can be either an 'application' or a 'library' chart.
+# This is an application chart because we are deploying a Spring Boot app.
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+version: 0.1.0
+
+# This is the version number of the application being deployed. It should reflect the version of your Spring Boot app.
+# It's a good practice to use the version of the app you're deploying here.
+appVersion: "0.0.1-SNAPSHOT"  # Change this version number to match the actual version of your Spring Boot application.

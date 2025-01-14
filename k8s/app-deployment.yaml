@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gestionevents-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gestionevents
+  template:
+    metadata:
+      labels:
+        app: gestionevents
+    spec:
+      containers:
+        - name: gestionevents-app
+          image: slimzrk/gestionevents:latest
+          envFrom:
+            - configMapRef:
+                name: app-configmap
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysqldb:3306/gestionevents"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "rootpassword"

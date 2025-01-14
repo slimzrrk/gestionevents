@@ -9,7 +9,7 @@ services:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: gestionevents
       MYSQL_USER: root
-      MYSQL_PASSWORD:
+      MYSQL_PASSWORD: rootpassword
     volumes:
       - db_data:/var/lib/mysql
 
