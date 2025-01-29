@@ -45,7 +45,7 @@ The application is deployed on a **Kubernetes cluster** with the following confi
 
 📸 Here is a screenshot showing the Kubernetes service and the application running:
 
-![Kubernetes Service and Application](./path/to/Capture_d’écran_2025-01-13_à_9.59.07_PM.png)
+![Kubernetes Service and Application](images/kubernetes.png)
 
 📡 The service is exposed using a **NodePort**, and the application is accessible via the provided URL.
 
